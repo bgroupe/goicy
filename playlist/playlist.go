@@ -6,11 +6,17 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"strings"
 
 	"github.com/bgroupe/goicy/config"
+	"github.com/bgroupe/goicy/logger"
 	"github.com/bgroupe/goicy/util"
-	"github.com/davecgh/go-spew/spew"
+)
+
+const (
+	playlistKey    = "current-playlist"
+	nowPlayingKey  = "now-playing"
+	tracksKey      = "tracks"
+	currentSession = "current-session"
 )
 
 var playlist []string
@@ -21,14 +27,35 @@ var nowPlaying Track
 var plc PlaylistContainer
 
 func First() string {
+	db, err := ConnectDB(config.Cfg.RedisURL)
+	if err != nil {
+		logger.Log("error connecting to db", 0)
+		panic(err)
+	}
+
+	defer db.Conn.Close()
+
 	if plc.PlaylistLength() > 0 {
-		return plc.Playlist.Tracks[0].FilePath
+		res, err := db.AddJsonStruct("now-playing", plc.Playlist.Tracks[0])
+		if e := logStructUpdate(err, res); e != nil {
+			return ""
+		} else {
+			return plc.Playlist.Tracks[0].FilePath
+		}
 	} else {
 		return ""
 	}
 }
 
 func Next(pc PlaylistControl) string {
+	db, err := ConnectDB(config.Cfg.RedisURL)
+	if err != nil {
+		logger.Log("error connecting to db", 0)
+		panic(err)
+	}
+
+	defer db.Conn.Close()
+
 	if idx > plc.PlaylistLength()-1 {
 		idx = 0
 	}
@@ -49,47 +76,27 @@ func Next(pc PlaylistControl) string {
 			}
 		}
 	}
-
-	return plc.Playlist.Tracks[idx].FilePath
+	// TODO: handle errors in main function
+	// TODO: Add session path for now playing
+	res, err := db.AddJsonStruct(nowPlayingKey, plc.Playlist.Tracks[0])
+	if e := logStructUpdate(err, res); e != nil {
+		return ""
+	} else {
+		return plc.Playlist.Tracks[idx].FilePath
+	}
 }
 
-func Load() error {
-	// if ok := util.FileExists(config.Cfg.Playlist); !ok {
-	// 	return errors.New("Playlist file doesn't exist")
-	// }
-
-	content, err := ioutil.ReadFile(config.Cfg.Playlist)
+// Loads json playlist file. Creates a dir configured by `basepath` which defaults to `tmp`
+func LoadJSON() error {
+	//  TODO: Load and save playlist
+	db, err := ConnectDB(config.Cfg.RedisURL)
 	if err != nil {
+		logger.Log("error connecting to db", 0)
 		return err
 	}
 
-	LoadJSON()
+	defer db.Conn.Close()
 
-	spew.Dump(plc.Playlist)
-
-	playlist = strings.Split(string(content), "\n")
-	i := 0
-	for i < len(playlist) {
-		playlist[i] = strings.Replace(playlist[i], "\r", "", -1)
-		if err != nil {
-			return err
-		}
-
-		if ok := util.FileExists(playlist[i]); !ok && !strings.HasPrefix(playlist[i], "http") {
-			playlist = append(playlist[:i], playlist[i+1:]...)
-
-			continue
-		}
-		i += 1
-	}
-	if len(playlist) < 1 {
-		return errors.New("Error: all files in the playlist do not exist")
-	}
-	return nil
-}
-
-// Loads json playlist file. Creates a dir configured by `--session-dir` which defaults to `tmp`
-func LoadJSON() error {
 	if ok := util.FileExists(config.Cfg.Playlist); !ok {
 		return errors.New("Playlist file doesn't exist")
 	}
@@ -119,5 +126,33 @@ func LoadJSON() error {
 		plc.UpdateTrackFilePath(dlf, i)
 	}
 
+	// append session to the master list
+	_, err = db.AppendListSession(fd.Session)
+	if err != nil {
+		logger.Logf("Failure to append session to master list %v", 0, err.Error())
+	}
+
+	// session-playlist
+	sessionPlaylistKey := fmt.Sprintf("%v-playlist", fd.Session)
+	res, err := db.AddJsonStruct(sessionPlaylistKey, plc.Playlist)
+
+	if err != nil {
+		logger.Logf("Failure to add json struct %v", 0, err.Error())
+	} else {
+		logger.Logf("Added session-playlist: %v", 1, res.(string))
+	}
+
 	return err
 }
+
+func logStructUpdate(e error, r interface{}) error {
+	if e != nil {
+		logger.Logf("Failure to add json struct %v", 0, e.Error())
+	} else {
+		logger.Logf("Added current-playlist: %v", 1, r.(string))
+	}
+
+	return e
+}
+
+// MAYBE: https://github.com/teris-io/shortid

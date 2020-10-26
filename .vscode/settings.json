@@ -31,5 +31,23 @@
             // "cursor": "pointer",
             "border": "1px solid #eee",
             "borderRadius": "2px",
-        }
+        },
+        {
+            "text": "MAYBE:",
+            "color": "#f7sf7f7",
+            "backgroundColor": "#6737f0",
+            "overviewRulerColor": "#ffab00",
+            // "cursor": "pointer",
+            "border": "1px solid #eee",
+            "borderRadius": "2px",
+        },
+        {
+            "text": "MOAR:",
+            "color": "#f7sf7f7",
+            "backgroundColor": "#0089ff",
+            "overviewRulerColor": "#ffab00",
+            // "cursor": "pointer",
+            "border": "1px solid #eee",
+            "borderRadius": "2px",
+        },
     ]

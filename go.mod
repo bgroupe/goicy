@@ -8,8 +8,9 @@ require (
 	github.com/go-delve/delve v1.5.0 // indirect
 	github.com/go-ini/ini v1.61.0
 	github.com/go-redis/redis v6.15.9+incompatible // indirect
+	github.com/gofiber/fiber/v2 v2.1.0
 	github.com/gomodule/redigo v2.0.0+incompatible
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.1.2
 	github.com/iancoleman/strcase v0.1.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mdempsky/gocode v0.0.0-20200405233807-4acdcbdea79d // indirect
@@ -24,7 +25,6 @@ require (
 	gitlab.com/bgroupe/pandemic v0.0.0-20200518050102-9c81bb2f5464 // indirect
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0 // indirect
 	golang.org/x/net v0.0.0-20201006153459-a7d1128ccaa0 // indirect
-	golang.org/x/sys v0.0.0-20201008064518-c1f3e3309c71 // indirect
 	golang.org/x/tools v0.0.0-20201017001424-6003fad69a88 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )

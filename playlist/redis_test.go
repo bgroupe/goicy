@@ -4,10 +4,11 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+	"github.com/google/uuid"
 )
 
 const (
-	redisAddr = "localhost:6379"
+	redisAddr = "redis://localhost:6379"
 )
 
 var jsonData = []byte(`
@@ -112,6 +113,36 @@ func TestGetJsonStruct(t *testing.T) {
 	}
 }
 
-// TODO: Hello
-// DONE: THis is done
-// STEP: this is a step
+func TestAppendAndGetSession(t *testing.T) {
+	db, err := ConnectDB(redisAddr)
+	if err != nil {
+		t.Fatalf("error connection to db: %e", err)
+	}
+	uniqSession := uuid.New()
+	_, err = db.AppendListSession(uniqSession.String())
+
+	if err != nil {
+		t.Fatalf("Failure to append session to list %e", err)
+	}
+
+	sessions, err := db.GetSessions()
+
+	if err != nil {
+		t.Fatalf("Failure to get sessions %e", err)
+	}
+
+	t.Logf("sessions: %v", sessions)
+
+	if sessions[0] == uniqSession.String() {
+		t.Logf("session %v pushed correctly", sessions[0])
+	} else {
+		t.Fatalf("incorrect session index in list: %v", sessions[0])
+	}
+
+	cs, err := db.GetCurrentSession()
+	if cs == uniqSession.String() {
+		t.Logf("current-session %v set correctly", cs)
+	} else {
+		t.Fatalf("current session not set: %v", cs)
+	}
+}

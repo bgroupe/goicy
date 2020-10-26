@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/bgroupe/goicy/api"
 	"github.com/bgroupe/goicy/config"
 	"github.com/bgroupe/goicy/logger"
 	"github.com/bgroupe/goicy/playlist"
@@ -16,7 +17,7 @@ import (
 )
 
 func main() {
-
+	// TODO: Spruce This up
 	fmt.Println("=====================================================================")
 	fmt.Println(" goicy v" + config.Version + " -- A hz reincarnate rewritten in Go")
 	fmt.Println(" AAC/AACplus/AACplusV2 & MP1/MP2/MP3 Icecast/Shoutcast source client")
@@ -63,7 +64,15 @@ func main() {
 
 	retries := 0
 	filename := playlist.First()
+
+	// before playing, start server
+	app := api.NewAPIServer()
+
+	go app.Listen(":9091")
+
 	for {
+		logger.Log(filename, 0)
+
 		var err error
 		if config.Cfg.StreamType == "file" {
 			err = stream.StreamFile(filename)

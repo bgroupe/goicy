@@ -25,7 +25,12 @@ type Config struct {
 	BasePath          string `ini:"basepath"`
 	StorageType       string `ini:"storagetype"`
 	AccessKey         string `ini:"accesskey"`
-	SecretKey         string `ini:"secretkey"`
+	SecretKey         string `ini:"accesskey"`
+	RedisHost         int    `ini:"redishost"`
+	RedisPort         string `ini:"redisport"`
+	RedisPassword     string `ini:"redispassword"`
+	RedisDatabase     int    `ini:"redisdatabase"`
+	RedisURL          string `ini:"redisurl"`
 	NpFile            string `ini:"npfile"`
 	LogFile           string `ini:"logfile"`
 	ScriptFile        string `ini:"logfile"`
@@ -84,6 +89,9 @@ func LoadConfig(filename string) error {
 	Cfg.StorageType = ini.Section("remotefs").Key("storagetype").Value()
 	Cfg.AccessKey = ini.Section("remotefs").Key("accesskey").Value()
 	Cfg.SecretKey = ini.Section("remotefs").Key("secretkey").Value()
+
+	// [database]
+	Cfg.RedisURL = ini.Section("database").Key("redisurl").Value()
 
 	Cfg.BufferSize, _ = ini.Section("misc").Key("buffersize").Int()
 	Cfg.BufferSize *= 1000

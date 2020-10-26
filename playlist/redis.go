@@ -57,9 +57,46 @@ func (db *DB) GetJsonStructPath(key string, path string) (res interface{}, err e
 	return json, err
 }
 
+// Appends session to Redis list of sessions. If appended successfully, `current-session key will be set with the same value`
+func (db *DB) AppendListSession(session string) (res interface{}, err error) {
+	res, err = db.Conn.Do("LPUSH", "sessions", session)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, err = db.Conn.Do("SET", "current-session", session)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return res, err
+}
+
+// Gets list of Sessions. Returns array of strings
+func (db *DB) GetSessions() (res []string, err error) {
+	res, err = redis.Strings(db.Conn.Do("LRANGE", "sessions", "0", "-1"))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return res, err
+}
+
+// Gets list of Sessions. Returns array of strings
+func (db *DB) GetCurrentSession() (res string, err error) {
+	res, err = redis.String(db.Conn.Do("GET", "current-session"))
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return res, err
+}
+
 // Constructor
-func ConnectDB(addr string) (db DB, err error) {
-	conn, err := redis.Dial("tcp", addr)
+func ConnectDB(url string) (db DB, err error) {
+	conn, err := redis.DialURL(url)
 	if err != nil {
 		fmt.Println("error connecting to db")
 	}
