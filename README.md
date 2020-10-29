@@ -127,3 +127,12 @@ mode.
 goicy inifile, i.e.:
 
     ./goicy /etc/goicy/rock.ini
+
+
+
+## Converting w/ ffmpeg
+
+```
+ffmpeg -i audio.wav -acodec libmp3lame audio.mp3
+```
+https://stackoverflow.com/questions/3255674/convert-audio-files-to-mp3-using-ffmpeg

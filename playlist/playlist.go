@@ -10,19 +10,14 @@ import (
 	"github.com/bgroupe/goicy/config"
 	"github.com/bgroupe/goicy/logger"
 	"github.com/bgroupe/goicy/util"
-)
-
-const (
-	playlistKey    = "current-playlist"
-	nowPlayingKey  = "now-playing"
-	tracksKey      = "tracks"
-	currentSession = "current-session"
+	"github.com/davecgh/go-spew/spew"
 )
 
 var playlist []string
 var idx int
 var np string
 var nowPlaying Track
+var currentSession string
 
 var plc PlaylistContainer
 
@@ -36,7 +31,9 @@ func First() string {
 	defer db.Conn.Close()
 
 	if plc.PlaylistLength() > 0 {
-		res, err := db.AddJsonStruct("now-playing", plc.Playlist.Tracks[0])
+		sessionNPKey := fmt.Sprintf("%v-now-playing", plc.Sessions[0])
+		res, err := db.AddJsonStruct(sessionNPKey, plc.Playlist.Tracks[0])
+
 		if e := logStructUpdate(err, res); e != nil {
 			return ""
 		} else {
@@ -62,23 +59,34 @@ func Next(pc PlaylistControl) string {
 
 	nowPlaying = plc.Playlist.Tracks[idx]
 
+	//TODO: Reload
 	if pc.Reload {
 		LoadJSON()
 	}
 
 	for (nowPlaying == plc.Playlist.Tracks[idx]) && (plc.PlaylistLength() > 1) {
 		if !config.Cfg.PlayRandom {
+			spew.Dump("idx BEFORE iteration", idx)
 			idx = idx + 1
+			spew.Dump("idx AFTER iteration", idx)
 			if idx > plc.PlaylistLength()-1 {
+				spew.Dump("idx greater than length", idx)
 				idx = 0
-			} else {
-				idx = rand.Intn(plc.PlaylistLength())
 			}
+		} else {
+			idx = rand.Intn(plc.PlaylistLength())
+			spew.Dump("idx RANDOMIZED", idx)
 		}
 	}
+
 	// TODO: handle errors in main function
-	// TODO: Add session path for now playing
-	res, err := db.AddJsonStruct(nowPlayingKey, plc.Playlist.Tracks[0])
+	// DONE: Add session path for now playing
+	// find current track by getting current session
+	// LRANGE sessions 0 0
+	// GET  <session>-now-playing
+	sessionNPKey := fmt.Sprintf("%v-now-playing", plc.Sessions[0])
+	res, err := db.AddJsonStruct(sessionNPKey, plc.Playlist.Tracks[idx])
+
 	if e := logStructUpdate(err, res); e != nil {
 		return ""
 	} else {
@@ -88,7 +96,7 @@ func Next(pc PlaylistControl) string {
 
 // Loads json playlist file. Creates a dir configured by `basepath` which defaults to `tmp`
 func LoadJSON() error {
-	//  TODO: Load and save playlist
+	//  DONE: Load and save playlist
 	db, err := ConnectDB(config.Cfg.RedisURL)
 	if err != nil {
 		logger.Log("error connecting to db", 0)
@@ -115,7 +123,7 @@ func LoadJSON() error {
 
 	fd := NewDownloader(plc.Playlist.DlCfg)
 
-	plc.AppendFileSession(fd.SessionPath)
+	plc.AppendFileSession(fd.Session, fd.SessionPath)
 
 	for i, track := range plc.Playlist.Tracks {
 		dlf, err := fd.Download(track)
@@ -155,4 +163,23 @@ func logStructUpdate(e error, r interface{}) error {
 	return e
 }
 
+func RegisterPlaylistControl(pc PlaylistControl) error {
+	db, err := ConnectDB(config.Cfg.RedisURL)
+
+	if err != nil {
+		logger.Log("error connecting to db", 0)
+		return err
+	}
+
+	defer db.Conn.Close()
+
+	_, err = db.AddJsonStruct("playlist-control", pc)
+	if err != nil {
+		logger.Log("error adding playlist control to db", 0)
+		return err
+	}
+	return err
+}
+
 // MAYBE: https://github.com/teris-io/shortid
+// TODO: use previous session

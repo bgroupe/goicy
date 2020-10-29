@@ -9,5 +9,5 @@ services:
     container_name: icecast
     image: vimagick/icecast
     ports:
-      - "127.0.0.0:8000:8000"
+      - "8000:8000"
     restart: always

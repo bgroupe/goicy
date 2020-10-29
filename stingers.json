@@ -1,0 +1,31 @@
+{
+    "name": "channel1",
+    "downloadConfig": {
+        "private": true,
+        "endpoint": "nyc3.digitaloceanspaces.com",
+        "bucket": "oz-tf"
+    },
+    "tracks": [
+        {
+            "title": "stinger.1",
+            "artist": "oz.fm",
+            "description": "stinger.1 - Noisy",
+            "objectPath": "test/stinger1.mp3",
+            "url": "https://oz-tf.nyc3.digitaloceanspaces.com/test/stinger1.mp3"
+        },
+        {
+            "title": "stinger.2",
+            "artist": "oz.fm",
+            "description": "stinger.2 - Rhythmic",
+            "objectPath": "test/stinger2.mp3",
+            "url": "https://oz-tf.nyc3.digitaloceanspaces.com/test/stinger2.mp3"
+        },
+        {
+            "title": "stinger.3",
+            "artist": "oz.fm",
+            "description": "stinger.3 - Ambient",
+            "objectPath": "test/stinger3.mp3",
+            "url": "https://oz-tf.nyc3.digitaloceanspaces.com/test/stinger3.mp3"
+        }
+    ]
+}

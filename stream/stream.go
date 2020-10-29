@@ -218,7 +218,7 @@ func StreamFFMPEG(filename string) error {
 		if config.Cfg.StreamReencode {
 			cmdArgs = []string{
 				"-i", filename,
-				"-c:a", "libfdk_aac",
+				"-c:a", "aac",
 				"-profile:a", profile,
 				"-b:a", strconv.Itoa(config.Cfg.StreamBitrate),
 				"-cutoff", "20000",

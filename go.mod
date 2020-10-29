@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/alicebob/miniredis/v2 v2.13.3
+	github.com/d4l3k/go-pry v0.0.0-20181122210047-3e3af674fe57 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/go-delve/delve v1.5.0 // indirect
 	github.com/go-ini/ini v1.61.0
@@ -13,7 +14,9 @@ require (
 	github.com/google/uuid v1.1.2
 	github.com/iancoleman/strcase v0.1.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/mattn/go-tty v0.0.3 // indirect
 	github.com/mdempsky/gocode v0.0.0-20200405233807-4acdcbdea79d // indirect
+	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/minio/minio-go/v7 v7.0.5
 	github.com/motemen/go-quickfix v0.0.0-20200118031250-2a6e54e79a50 // indirect

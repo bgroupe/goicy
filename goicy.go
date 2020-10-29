@@ -18,6 +18,7 @@ import (
 
 func main() {
 	// TODO: Spruce This up
+	// https://github.com/gofiber/fiber/blob/5259f3a40b0e709ddbd820d893e86c6f1b94836b/app.go#L709
 	fmt.Println("=====================================================================")
 	fmt.Println(" goicy v" + config.Version + " -- A hz reincarnate rewritten in Go")
 	fmt.Println(" AAC/AACplus/AACplusV2 & MP1/MP2/MP3 Icecast/Shoutcast source client")
@@ -26,7 +27,7 @@ func main() {
 	fmt.Println()
 
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 
 	go func() {
 		<-sigs
@@ -59,8 +60,13 @@ func main() {
 		logger.Log(err.Error(), logger.LOG_ERROR)
 		return
 	}
-	// default values
+
+	// TODO: rethink all of this
 	playlistCtrl := playlist.PlaylistControl{}
+	err = playlist.RegisterPlaylistControl(playlistCtrl)
+	if err != nil {
+		panic(err)
+	}
 
 	retries := 0
 	filename := playlist.First()
@@ -68,7 +74,19 @@ func main() {
 	// before playing, start server
 	app := api.NewAPIServer()
 
-	go app.Listen(":9091")
+	go func() {
+		for {
+			select {
+			case <-sigs:
+				logger.Log("Aborted by user/SIGTERM", logger.LOG_INFO)
+				app.Shutdown()
+			default:
+				_ = app.Listen(":9091")
+			}
+		}
+	}()
+
+	// go app.Listen(":9091")
 
 	for {
 		logger.Log(filename, 0)

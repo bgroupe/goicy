@@ -5,13 +5,14 @@ import (
 )
 
 type PlaylistControl struct {
-	Reload bool `default:"false"`
-	Random bool `default:"false"`
+	Reload bool `json:"reload" default:"false"`
+	Random bool `json:"random" default:"false"`
 }
 
 type PlaylistContainer struct {
-	Playlist Playlist `json:"playlist"`
-	Sessions []string `json:"sessions"`
+	Playlist     Playlist `json:"playlist"`
+	Sessions     []string `json:"sessions"`
+	SessionPaths []string `json:"sessionsPaths"`
 }
 
 // Currently cannot handle mixed public/private downloads
@@ -49,8 +50,9 @@ func (pc *PlaylistContainer) UpdateTrackFilePath(str string, i int) {
 }
 
 // Appends Filedownloader session to PlaylistContainer
-func (pc *PlaylistContainer) AppendFileSession(session string) {
+func (pc *PlaylistContainer) AppendFileSession(session string, sessionPath string) {
 	pc.Sessions = append(pc.Sessions, session)
+	pc.SessionPaths = append(pc.Sessions, sessionPath)
 }
 
 // Returns length of internal Playlist
